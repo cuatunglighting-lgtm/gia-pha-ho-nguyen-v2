@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#8b5b28">
+  <meta name="application-name" content="Gia phả họ Nguyễn">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Gia phả Nguyễn">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="format-detection" content="telephone=no">
+  <title>GIA PHẢ HỌ NGUYỄN</title>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="./icon-512.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="./icon-120.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="./icon-152.png">
+  <link rel="apple-touch-icon" sizes="167x167" href="./icon-167.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="./icon-180.png">
+  <style>
+    html,body{margin:0;width:100%;height:100%;background:#fff;overflow:hidden}
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+    #app{position:fixed;inset:0;width:100%;height:100%;background:#fff}
+    iframe{display:block;border:0;width:100%;height:100%;background:#fff}
+    #loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#fff;z-index:2}
+    #loadingBox{text-align:center;color:#8b5b28;padding:24px}
+    #loading img{width:88px;height:88px;border-radius:18px;display:block;margin:0 auto 16px}
+    #loading strong{display:block;font-size:18px;margin-bottom:8px}
+    #loading span{font-size:13px;color:#666}
+    #error{display:none;position:fixed;inset:0;background:#fff;z-index:3;padding:28px;box-sizing:border-box}
+    #error h2{margin:0 0 12px;color:#8b5b28}
+    #error p{line-height:1.55;color:#444}
+    #error code{display:block;word-break:break-all;background:#f3f5f7;padding:12px;border-radius:8px;font-size:12px}
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <div id="loading"><div id="loadingBox"><img src="./icon-180.png" alt="Gia phả họ Nguyễn"><strong>GIA PHẢ HỌ NGUYỄN</strong><span>Đang mở ứng dụng…</span></div></div>
+  <div id="error"><h2>Chưa cấu hình Web App</h2><p>Mở <b>config.js</b> và kiểm tra URL Apps Script kết thúc bằng <b>/exec</b>.</p><code>APP_URL = "https://script.google.com/macros/s/.../exec"</code></div>
+  <script src="./config.js"></script>
+  <script>
+    (function(){
+      var url=window.GIA_PHA_CONFIG&&window.GIA_PHA_CONFIG.APP_URL;
+      if(!url||!/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec$/.test(url)){
+        document.getElementById('loading').style.display='none';
+        document.getElementById('error').style.display='block';return;
+      }
+      var frame=document.createElement('iframe');frame.src=url;frame.title='GIA PHẢ HỌ NGUYỄN';
+      frame.allow='clipboard-read; clipboard-write';frame.setAttribute('referrerpolicy','no-referrer-when-downgrade');
+      frame.onload=function(){document.getElementById('loading').style.display='none';};
+      document.getElementById('app').appendChild(frame);
+    })();
+    if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('./service-worker.js').catch(function(){});});}
+  </script>
+</body></html>
