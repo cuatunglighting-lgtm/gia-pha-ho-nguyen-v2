@@ -1,5 +1,4 @@
-
-/* V7: cấu hình địa chỉ triển khai Apps Script */
+// V7: để trống có chủ đích; chỉ điền URL /exec của Apps Script V7 sau khi triển khai và kiểm thử bản sao.
 window.GIA_PHA_CONFIG = {
-  APP_URL: 'https://script.google.com/macros/s/AKfycbxfiLmkhGmiLqvY8jw0dDeSF68c7InyQgNB9blnDxjQUArpzwlsJq6fDpqkVlWdXg8KHw/exec'
+  APP_URL: ''
 };
