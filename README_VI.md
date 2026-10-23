@@ -1,7 +1,6 @@
-# GIA PHẢ HỌ NGUYỄN — PWA V5
+# GIA PHẢ HỌ NGUYỄN — PWA V10
 
-1. Đây là vỏ PWA GitHub Pages mở Web App Apps Script. `APP_URL` hiện để trống có chủ đích để tránh mở nhầm phiên bản production cũ.
-2. Sau khi deploy Apps Script V5 và kiểm thử xong, dán URL Web App V5 kết thúc bằng `/exec` vào `config.js`; không đưa bí mật/mật khẩu vào file này.
-3. Service worker dùng cache `gia-pha-pwa-v5`; sau deploy, đóng hoàn toàn PWA rồi mở lại.
-4. PWA không chứa dữ liệu gia phả trực tiếp; dữ liệu được đọc/ghi bởi Apps Script theo quyền đăng nhập.
-5. Chỉ deploy sau khi Apps Script đã được kiểm thử trên bản sao dữ liệu V6.
+1. PWA là vỏ GitHub Pages mở Web App Apps Script; không lưu dữ liệu thành viên trong cache PWA.
+2. `config.js` đã điền URL `/exec` do chủ dự án cung cấp. Cần kiểm tra URL đang trỏ tới đúng deployment V10 trước khi dùng production.
+3. Service worker cache hiện là `gia-pha-pwa-v10`; sau khi cập nhật GitHub Pages, đóng hoàn toàn ứng dụng/PWA rồi mở lại hoặc xóa dữ liệu website để loại cache cũ.
+4. Chỉ phát hành production sau khi kiểm thử deployment Apps Script và dữ liệu Google Sheets trên bản sao.
