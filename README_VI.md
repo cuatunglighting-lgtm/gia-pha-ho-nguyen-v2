@@ -1,6 +1,6 @@
-# GIA PHẢ HỌ NGUYỄN — PWA V10
+# GIA PHẢ HỌ NGUYỄN — PWA V11
 
 1. PWA là vỏ GitHub Pages mở Web App Apps Script; không lưu dữ liệu thành viên trong cache PWA.
-2. `config.js` đã điền URL `/exec` do chủ dự án cung cấp. Cần kiểm tra URL đang trỏ tới đúng deployment V10 trước khi dùng production.
-3. Service worker cache hiện là `gia-pha-pwa-v10`; sau khi cập nhật GitHub Pages, đóng hoàn toàn ứng dụng/PWA rồi mở lại hoặc xóa dữ liệu website để loại cache cũ.
-4. Chỉ phát hành production sau khi kiểm thử deployment Apps Script và dữ liệu Google Sheets trên bản sao.
+2. `config.js` có URL `/exec` do chủ dự án cung cấp. Cần xác minh URL này trỏ đúng deployment đã nghiệm thu trước khi dùng production.
+3. Service worker cache là `gia-pha-pwa-v11`; sau khi cập nhật GitHub Pages, đóng hoàn toàn ứng dụng/PWA rồi mở lại nếu trình duyệt còn cache cũ.
+4. Chỉ phát hành production sau khi kiểm thử Apps Script, Google Sheets, PDF và Safari iPhone trên bản sao.
