@@ -1,5 +1,4 @@
-// V5: cố ý để trống để tránh PWA mới gọi nhầm ứng dụng production cũ.
-// Sau khi triển khai Apps Script V5 thử nghiệm, dán URL Web App kết thúc bằng /exec vào APP_URL.
+// V7: để trống có chủ đích; chỉ điền URL /exec của Apps Script V7 sau khi triển khai và kiểm thử bản sao.
 window.GIA_PHA_CONFIG = {
   APP_URL: ''
 };
