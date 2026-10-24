@@ -19,10 +19,10 @@
   <link rel="apple-touch-icon" sizes="167x167" href="./icon-167.png">
   <link rel="apple-touch-icon" sizes="180x180" href="./icon-180.png">
   <style>
-    html,body{margin:0;width:100%;height:100%;background:#fff;overflow:hidden}
+    html,body{margin:0;width:100%;height:100%;min-height:100%;background:#fff;overflow:hidden;overscroll-behavior:none;-webkit-text-size-adjust:100%;text-size-adjust:100%}
     body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
-    #app{position:fixed;inset:0;width:100%;height:100%;background:#fff}
-    iframe{display:block;border:0;width:100%;height:100%;background:#fff}
+    #app{position:fixed;inset:0;width:100%;height:100vh;height:100dvh;height:100svh;background:#fff;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box}
+    iframe{display:block;border:0;width:100%;height:100%;min-height:0;background:#fff;touch-action:pan-x pan-y}
     #loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#fff;z-index:2}
     #loadingBox{text-align:center;color:#8b5b28;padding:24px}
     #loading img{width:88px;height:88px;border-radius:18px;display:block;margin:0 auto 16px}
@@ -32,6 +32,8 @@
     #error h2{margin:0 0 12px;color:#8b5b28}
     #error p{line-height:1.55;color:#444}
     #error code{display:block;word-break:break-all;background:#f3f5f7;padding:12px;border-radius:8px;font-size:12px}
+  @media(max-width:767px){#loading img{width:80px;height:80px}#loadingBox{padding:20px}#loading strong{font-size:17px}}
+    @media(orientation:landscape) and (max-height:520px){#loading img{width:54px;height:54px;margin-bottom:8px}#loadingBox{padding:10px}}
   </style>
 </head>
 <body>
