@@ -32,6 +32,7 @@
     #error h2{margin:0 0 12px;color:#8b5b28}
     #error p{line-height:1.55;color:#444}
     #error code{display:block;word-break:break-all;background:#f3f5f7;padding:12px;border-radius:8px;font-size:12px}
+    #pushSetup{display:none;position:fixed;z-index:10;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));padding:14px;border:0;border-radius:14px;background:#9b5b12;color:#fff;font-weight:700;font-size:15px;box-shadow:0 4px 20px #0003}
   @media(max-width:767px){#loading img{width:80px;height:80px}#loadingBox{padding:20px}#loading strong{font-size:17px}}
     @media(orientation:landscape) and (max-height:520px){#loading img{width:54px;height:54px;margin-bottom:8px}#loadingBox{padding:10px}}
   </style>
@@ -39,6 +40,7 @@
 <body>
   <div id="app"></div>
   <div id="loading"><div id="loadingBox"><img src="./icon-180.png" alt="Gia phả họ Nguyễn"><strong>GIA PHẢ HỌ NGUYỄN</strong><span>Đang mở ứng dụng…</span></div></div>
+  <button id="pushSetup" type="button">Bật thông báo đẩy trên điện thoại</button>
   <div id="error"><h2>Chưa cấu hình Web App</h2><p>Mở <b>config.js</b> và kiểm tra URL Apps Script kết thúc bằng <b>/exec</b>.</p><code>APP_URL = "https://script.google.com/macros/s/.../exec"</code></div>
   <script src="./config.js"></script>
   <script>
@@ -52,6 +54,16 @@
       frame.allow='clipboard-read; clipboard-write';frame.setAttribute('referrerpolicy','no-referrer-when-downgrade');
       frame.onload=function(){document.getElementById('loading').style.display='none';};
       document.getElementById('app').appendChild(frame);
+    })();
+    (function(){
+      var cfg=window.GIA_PHA_CONFIG||{}, oneSignalReady=null, activeUserId='';
+      function loadOneSignal(){if(!cfg.ONESIGNAL_APP_ID)return Promise.reject(new Error('Chưa cấu hình ONESIGNAL_APP_ID trong config.js'));if(oneSignalReady)return oneSignalReady;oneSignalReady=new Promise(function(resolve,reject){window.OneSignalDeferred=window.OneSignalDeferred||[];window.OneSignalDeferred.push(async function(OS){try{await OS.init({appId:cfg.ONESIGNAL_APP_ID,serviceWorkerPath:'./onesignal/OneSignalSDKWorker.js',serviceWorkerUpdaterPath:'./onesignal/OneSignalSDKUpdaterWorker.js',serviceWorkerParam:{scope:new URL('./onesignal/',window.location.href).pathname}});resolve(OS);}catch(e){reject(e);}});var sc=document.createElement('script');sc.src='https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js';sc.defer=true;sc.onerror=function(){reject(new Error('Không tải được OneSignal SDK'));};document.head.appendChild(sc);});return oneSignalReady;}
+      var pushBtn=document.getElementById('pushSetup');
+      window.addEventListener('message',async function(ev){var f=document.querySelector('#app iframe');if(!f||ev.source!==f.contentWindow||!ev.data||typeof ev.data.type!=='string')return;try{if(ev.data.type==='GP_AUTH'){activeUserId=String(ev.data.userId||'');if(activeUserId&&cfg.ONESIGNAL_APP_ID){var OS=await loadOneSignal();await OS.login(activeUserId);}}
+        else if(ev.data.type==='GP_ENABLE_PUSH'){activeUserId=String(ev.data.userId||activeUserId||'');if(!cfg.ONESIGNAL_APP_ID)throw new Error('Chưa cấu hình ONESIGNAL_APP_ID trong GITHUB_PWA/config.js');pushBtn.style.display='block';pushBtn.textContent='Bật thông báo đẩy trên điện thoại';}
+        else if(ev.data.type==='GP_LOGOUT'){activeUserId='';pushBtn.style.display='none';if(window.OneSignal&&window.OneSignal.logout)await window.OneSignal.logout();}
+      }catch(err){try{f.contentWindow.postMessage({type:'GP_PUSH_STATUS',ok:false,message:String(err&&err.message||err)},'*');}catch(_){}}});
+      pushBtn.addEventListener('click',async function(){var f=document.querySelector('#app iframe');pushBtn.disabled=true;try{var OS=await loadOneSignal();if(activeUserId)await OS.login(activeUserId);await OS.Notifications.requestPermission();if(OS.Notifications.permissionNative!=='granted')throw new Error('Bạn chưa cấp quyền thông báo cho ứng dụng.');if(OS.User&&OS.User.PushSubscription)await OS.User.PushSubscription.optIn();pushBtn.style.display='none';if(f)f.contentWindow.postMessage({type:'GP_PUSH_STATUS',ok:true},'*');}catch(err){if(f)f.contentWindow.postMessage({type:'GP_PUSH_STATUS',ok:false,message:String(err&&err.message||err)},'*');pushBtn.textContent='Thử bật thông báo lại';}finally{pushBtn.disabled=false;}});
     })();
     if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('./service-worker.js').catch(function(){});});}
   </script>
