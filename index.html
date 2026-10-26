@@ -58,9 +58,10 @@
       document.getElementById('app').appendChild(frame);
     })();
     (function(){
-      var cfg=window.GIA_PHA_CONFIG||{}, oneSignalReady=null, activeUserId='', activeAppWindow=null, pushActivationInProgress=false;
+      var cfg=window.GIA_PHA_CONFIG||{}, oneSignalReady=null, oneSignalScriptAdded=false, activeUserId='', activeAppWindow=null, pushActivationInProgress=false, pushAttemptId=0;
+      function withTimeout(promise,ms,label){var timer;return Promise.race([Promise.resolve(promise),new Promise(function(_,reject){timer=setTimeout(function(){reject(new Error(label||('Hết thời gian chờ sau '+Math.round(ms/1000)+' giây.')));},ms);})]).finally(function(){clearTimeout(timer);});}
       function replyToApp(target,payload){var source=target&&target.source?target.source:target;if(!source||typeof source.postMessage!=='function')return false;var origin=target&&typeof target.origin==='string'?target.origin:'*';try{source.postMessage(payload,origin);return true;}catch(e){try{source.postMessage(payload,'*');return true;}catch(e2){return false;}}}
-      function loadOneSignal(){if(!cfg.ONESIGNAL_APP_ID)return Promise.reject(new Error('Chưa cấu hình ONESIGNAL_APP_ID trong config.js'));if(oneSignalReady)return oneSignalReady;oneSignalReady=new Promise(function(resolve,reject){window.OneSignalDeferred=window.OneSignalDeferred||[];window.OneSignalDeferred.push(async function(OS){try{await OS.init({appId:cfg.ONESIGNAL_APP_ID,serviceWorkerPath:'/gia-pha-ho-nguyen-v2/onesignal/OneSignalSDKWorker.js',serviceWorkerUpdaterPath:'/gia-pha-ho-nguyen-v2/onesignal/OneSignalSDKUpdaterWorker.js',serviceWorkerParam:{scope:'/gia-pha-ho-nguyen-v2/onesignal/'}});resolve(OS);}catch(e){reject(e);}});var sc=document.createElement('script');sc.src='https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js';sc.defer=true;sc.onerror=function(){reject(new Error('Không tải được OneSignal SDK'));};document.head.appendChild(sc);});return oneSignalReady;}
+      function loadOneSignal(){if(!cfg.ONESIGNAL_APP_ID)return Promise.reject(new Error('Chưa cấu hình ONESIGNAL_APP_ID trong config.js'));if(window.OneSignal&&window.OneSignal.Notifications)return Promise.resolve(window.OneSignal);if(oneSignalReady)return oneSignalReady;oneSignalReady=withTimeout(new Promise(function(resolve,reject){var settled=false;function done(fn,value){if(settled)return;settled=true;fn(value);}window.OneSignalDeferred=window.OneSignalDeferred||[];window.OneSignalDeferred.push(async function(OS){try{await OS.init({appId:cfg.ONESIGNAL_APP_ID,serviceWorkerPath:'/gia-pha-ho-nguyen-v2/onesignal/OneSignalSDKWorker.js',serviceWorkerUpdaterPath:'/gia-pha-ho-nguyen-v2/onesignal/OneSignalSDKUpdaterWorker.js',serviceWorkerParam:{scope:'/gia-pha-ho-nguyen-v2/onesignal/'}});window.OneSignal=OS;done(resolve,OS);}catch(e){done(reject,e);}});if(!oneSignalScriptAdded){oneSignalScriptAdded=true;var sc=document.createElement('script');sc.src='https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js';sc.defer=true;sc.onerror=function(){oneSignalScriptAdded=false;done(reject,new Error('Không tải được OneSignal SDK. Kiểm tra mạng và thử lại.'));};document.head.appendChild(sc);}}),15000,'OneSignal không phản hồi trong 15 giây. Kiểm tra kết nối mạng, cấu hình App ID và Service Worker.').catch(function(e){oneSignalReady=null;throw e;});return oneSignalReady;}
       var pushBtn=document.getElementById('pushSetup');
       var pushStatus=document.getElementById('pushStatus');
       function showPushStatus(message){pushStatus.textContent=message;pushStatus.style.display='block';}
@@ -71,16 +72,19 @@
         else if(ev.data.type==='GP_LOGOUT'){activeUserId='';if(!pushActivationInProgress){pushBtn.style.display='none';hidePushStatus();}if(window.OneSignal&&window.OneSignal.logout)await window.OneSignal.logout();}
       }catch(err){replyToApp(ev,{type:'GP_PUSH_STATUS',ok:false,message:String(err&&err.message||err)});}});
       pushBtn.addEventListener('click',async function(){
-        pushActivationInProgress=true;pushBtn.style.display='block';pushBtn.disabled=true;pushBtn.textContent='Đang kiểm tra đăng ký…';showPushStatus('Đang kết nối OneSignal và kiểm tra quyền thông báo. Vui lòng chờ…');
+        if(pushActivationInProgress)return;var thisAttempt=++pushAttemptId;pushActivationInProgress=true;pushBtn.style.display='block';pushBtn.disabled=true;pushBtn.textContent='Đang kiểm tra đăng ký…';showPushStatus('Đang kết nối OneSignal… tối đa 15 giây để khởi tạo.');
         try{
           var OS=await loadOneSignal();
-          if(activeUserId)await OS.login(activeUserId);
+          if(thisAttempt!==pushAttemptId)return;
+          if(activeUserId)await withTimeout(OS.login(activeUserId),10000,'OneSignal đăng nhập người dùng quá thời gian chờ.');
           if(!OS.Notifications.isPushSupported())throw new Error('Trình duyệt hiện tại không hỗ trợ Web Push. Hãy mở ứng dụng từ Safari và dùng website đã thêm vào Màn hình chính trên iPhone.');
-          await OS.Notifications.requestPermission();
+          showPushStatus('OneSignal đã khởi tạo. Đang yêu cầu quyền thông báo…');
+          await withTimeout(OS.Notifications.requestPermission(),20000,'Yêu cầu quyền thông báo quá thời gian chờ. Hãy kiểm tra cài đặt quyền trên iPhone.');
           var permission=OS.Notifications.permissionNative;
           if(permission!=='granted')throw new Error(permission==='denied'?'Quyền thông báo đang bị từ chối. Hãy mở Cài đặt iPhone, tìm Safari hoặc ứng dụng web đã thêm vào Màn hình chính và bật Thông báo.':'Chưa cấp quyền thông báo. Hãy thử lại từ Safari hoặc ứng dụng đã thêm vào Màn hình chính.');
           if(!OS.User||!OS.User.PushSubscription)throw new Error('Đã cấp quyền nhưng OneSignal chưa tạo Push Subscription. Kiểm tra Worker và đăng ký dịch vụ.');
-          await OS.User.PushSubscription.optIn();
+          showPushStatus('Đã cấp quyền. Đang đăng ký thiết bị với OneSignal…');
+          await withTimeout(OS.User.PushSubscription.optIn(),12000,'OneSignal chưa hoàn tất đăng ký thiết bị trong 12 giây.');
           var result=await waitForSubscription(OS,10000);
           if(!result.id||!result.optedIn)throw new Error('Đã cấp quyền nhưng sau 10 giây OneSignal chưa xác nhận đăng ký thiết bị. Mở OneSignal → Audience → Subscriptions để kiểm tra; nút vẫn được giữ để thử lại.');
           showPushStatus('ĐÃ ĐĂNG KÝ THÀNH CÔNG. Push Subscription ID: '+result.id);
