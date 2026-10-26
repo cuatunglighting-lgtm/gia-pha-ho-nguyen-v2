@@ -41,6 +41,7 @@
 <body>
   <div id="app"></div>
   <div id="loading"><div id="loadingBox"><img src="./icon-180.png" alt="Gia phả họ Nguyễn"><strong>GIA PHẢ HỌ NGUYỄN</strong><span>Đang mở ứng dụng…</span></div></div>
+  <div id="pushStatus" role="status" aria-live="polite" style="display:none;position:fixed;z-index:11;left:16px;right:16px;bottom:calc(82px + env(safe-area-inset-bottom,0px));padding:12px 14px;border:1px solid #d8b77f;border-radius:12px;background:#fffaf0;color:#563716;font:600 14px/1.45 -apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif;box-shadow:0 4px 18px #0002;word-break:break-word"></div>
   <button id="pushSetup" type="button">Bật thông báo đẩy trên điện thoại</button>
   <div id="error"><h2>Chưa cấu hình Web App</h2><p>Mở <b>config.js</b> và kiểm tra URL Apps Script kết thúc bằng <b>/exec</b>.</p><code>APP_URL = "https://script.google.com/macros/s/.../exec"</code></div>
   <script src="./config.js"></script>
@@ -57,15 +58,39 @@
       document.getElementById('app').appendChild(frame);
     })();
     (function(){
-      var cfg=window.GIA_PHA_CONFIG||{}, oneSignalReady=null, activeUserId='', activeAppWindow=null;
+      var cfg=window.GIA_PHA_CONFIG||{}, oneSignalReady=null, activeUserId='', activeAppWindow=null, pushActivationInProgress=false;
       function replyToApp(target,payload){var source=target&&target.source?target.source:target;if(!source||typeof source.postMessage!=='function')return false;var origin=target&&typeof target.origin==='string'?target.origin:'*';try{source.postMessage(payload,origin);return true;}catch(e){try{source.postMessage(payload,'*');return true;}catch(e2){return false;}}}
       function loadOneSignal(){if(!cfg.ONESIGNAL_APP_ID)return Promise.reject(new Error('Chưa cấu hình ONESIGNAL_APP_ID trong config.js'));if(oneSignalReady)return oneSignalReady;oneSignalReady=new Promise(function(resolve,reject){window.OneSignalDeferred=window.OneSignalDeferred||[];window.OneSignalDeferred.push(async function(OS){try{await OS.init({appId:cfg.ONESIGNAL_APP_ID,serviceWorkerPath:'/gia-pha-ho-nguyen-v2/onesignal/OneSignalSDKWorker.js',serviceWorkerUpdaterPath:'/gia-pha-ho-nguyen-v2/onesignal/OneSignalSDKUpdaterWorker.js',serviceWorkerParam:{scope:'/gia-pha-ho-nguyen-v2/onesignal/'}});resolve(OS);}catch(e){reject(e);}});var sc=document.createElement('script');sc.src='https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js';sc.defer=true;sc.onerror=function(){reject(new Error('Không tải được OneSignal SDK'));};document.head.appendChild(sc);});return oneSignalReady;}
       var pushBtn=document.getElementById('pushSetup');
+      var pushStatus=document.getElementById('pushStatus');
+      function showPushStatus(message){pushStatus.textContent=message;pushStatus.style.display='block';}
+      function hidePushStatus(){pushStatus.textContent='';pushStatus.style.display='none';}
+      function waitForSubscription(OS,timeoutMs){return new Promise(function(resolve){var start=Date.now();(function check(){var ps=OS&&OS.User&&OS.User.PushSubscription;var id=ps&&ps.id;var optedIn=ps&&ps.optedIn;if(id&&optedIn){resolve({id:id,optedIn:true});return;}if(Date.now()-start>=timeoutMs){resolve({id:id||'',optedIn:!!optedIn});return;}setTimeout(check,500);})();});}
       window.addEventListener('message',async function(ev){var f=document.querySelector('#app iframe');if(!f||!ev.data||typeof ev.data.type!=='string')return;var originOk=/^https:\/\/(script\.google\.com|[a-z0-9-]+\.googleusercontent\.com)$/.test(ev.origin||'');var fromApp=(ev.source===f.contentWindow)||originOk;if(!fromApp)return;activeAppWindow=ev.source;try{if(ev.data.type==='GP_AUTH'){activeUserId=String(ev.data.userId||'');if(activeUserId&&cfg.ONESIGNAL_APP_ID){var OS=await loadOneSignal();await OS.login(activeUserId);}}
         else if(ev.data.type==='GP_ENABLE_PUSH'){activeUserId=String(ev.data.userId||activeUserId||'');if(!cfg.ONESIGNAL_APP_ID)throw new Error('Thiếu ONESIGNAL_APP_ID trong GITHUB_PWA/config.js. Cần tạo ứng dụng Web Push trên OneSignal và triển khai lại GitHub Pages.');pushBtn.style.display='block';pushBtn.textContent='Bật thông báo đẩy trên điện thoại';replyToApp(ev,{type:'GP_PUSH_STATUS',ok:false,pending:true,message:'Đã kết nối lớp PWA. Hãy bấm nút nổi “Bật thông báo đẩy trên điện thoại” ở cuối màn hình để cấp quyền.'});}
-        else if(ev.data.type==='GP_LOGOUT'){activeUserId='';pushBtn.style.display='none';if(window.OneSignal&&window.OneSignal.logout)await window.OneSignal.logout();}
+        else if(ev.data.type==='GP_LOGOUT'){activeUserId='';if(!pushActivationInProgress){pushBtn.style.display='none';hidePushStatus();}if(window.OneSignal&&window.OneSignal.logout)await window.OneSignal.logout();}
       }catch(err){replyToApp(ev,{type:'GP_PUSH_STATUS',ok:false,message:String(err&&err.message||err)});}});
-      pushBtn.addEventListener('click',async function(){var f=document.querySelector('#app iframe');pushBtn.disabled=true;try{var OS=await loadOneSignal();if(activeUserId)await OS.login(activeUserId);await OS.Notifications.requestPermission();if(OS.Notifications.permissionNative!=='granted')throw new Error('Bạn chưa cấp quyền thông báo cho ứng dụng.');if(!OS.User||!OS.User.PushSubscription)throw new Error('OneSignal chưa tạo được đối tượng đăng ký thiết bị. Kiểm tra domain, HTTPS và service worker.');await OS.User.PushSubscription.optIn();var subId=OS.User.PushSubscription.id;if(!subId)throw new Error('Đã cấp quyền nhưng chưa có Push Subscription ID. Kiểm tra Audience → Subscriptions trong OneSignal rồi thử lại.');pushBtn.style.display='none';replyToApp(activeAppWindow,{type:'GP_PUSH_STATUS',ok:true,subscriptionId:subId});}catch(err){replyToApp(activeAppWindow,{type:'GP_PUSH_STATUS',ok:false,message:String(err&&err.message||err)});pushBtn.style.display='block';pushBtn.textContent='Thử bật thông báo lại';}finally{pushBtn.disabled=false;}});
+      pushBtn.addEventListener('click',async function(){
+        pushActivationInProgress=true;pushBtn.style.display='block';pushBtn.disabled=true;pushBtn.textContent='Đang kiểm tra đăng ký…';showPushStatus('Đang kết nối OneSignal và kiểm tra quyền thông báo. Vui lòng chờ…');
+        try{
+          var OS=await loadOneSignal();
+          if(activeUserId)await OS.login(activeUserId);
+          if(!OS.Notifications.isPushSupported())throw new Error('Trình duyệt hiện tại không hỗ trợ Web Push. Hãy mở ứng dụng từ Safari và dùng website đã thêm vào Màn hình chính trên iPhone.');
+          await OS.Notifications.requestPermission();
+          var permission=OS.Notifications.permissionNative;
+          if(permission!=='granted')throw new Error(permission==='denied'?'Quyền thông báo đang bị từ chối. Hãy mở Cài đặt iPhone, tìm Safari hoặc ứng dụng web đã thêm vào Màn hình chính và bật Thông báo.':'Chưa cấp quyền thông báo. Hãy thử lại từ Safari hoặc ứng dụng đã thêm vào Màn hình chính.');
+          if(!OS.User||!OS.User.PushSubscription)throw new Error('Đã cấp quyền nhưng OneSignal chưa tạo Push Subscription. Kiểm tra Worker và đăng ký dịch vụ.');
+          await OS.User.PushSubscription.optIn();
+          var result=await waitForSubscription(OS,10000);
+          if(!result.id||!result.optedIn)throw new Error('Đã cấp quyền nhưng sau 10 giây OneSignal chưa xác nhận đăng ký thiết bị. Mở OneSignal → Audience → Subscriptions để kiểm tra; nút vẫn được giữ để thử lại.');
+          showPushStatus('ĐÃ ĐĂNG KÝ THÀNH CÔNG. Push Subscription ID: '+result.id);
+          pushBtn.textContent='Thông báo đẩy đã bật';pushBtn.style.display='block';pushBtn.disabled=true;
+          pushActivationInProgress=false;replyToApp(activeAppWindow,{type:'GP_PUSH_STATUS',ok:true,subscriptionId:result.id,message:'Đã đăng ký nhận thông báo đẩy trên thiết bị.'});
+        }catch(err){
+          var msg=String(err&&err.message||err);pushActivationInProgress=false;showPushStatus('Chưa hoàn tất: '+msg);pushBtn.style.display='block';pushBtn.textContent='Thử bật thông báo lại';pushBtn.disabled=false;
+          replyToApp(activeAppWindow,{type:'GP_PUSH_STATUS',ok:false,message:msg});return;
+        }
+      });
     })();
     if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('./service-worker.js').catch(function(){});});}
   </script>
