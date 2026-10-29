@@ -1,9 +1,8 @@
 /* GIA PHẢ HỌ NGUYỄN - cache refresh V36
    Purpose: replace the older cache-first shell so GitHub Pages can deliver the updated index.html.
    Keep OneSignal SDK worker files available at the project subpath. */
-const CACHE = 'gia-pha-ho-nguyen-v60';
+const CACHE = 'gia-pha-ho-nguyen-v57-4-watermark-card-fit';
 const ASSETS = [
-  './dong-son-drum-v60.svg',
   './',
   './index.html',
   './config.js',
