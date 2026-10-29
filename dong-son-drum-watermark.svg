@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 900" fill="none">
+<g stroke="#8f8778" stroke-width="1.05" opacity=".11">
+ <g transform="translate(360 390)">
+  <circle r="300"/><circle r="290" stroke-dasharray="2 8"/><circle r="276"/><circle r="260" stroke-dasharray="1 6"/>
+  <circle r="244"/><circle r="232"/><circle r="215" stroke-dasharray="7 5"/><circle r="202"/>
+  <circle r="184"/><circle r="174" stroke-dasharray="2 5"/><circle r="154"/><circle r="143"/>
+  <circle r="124"/><circle r="113" stroke-dasharray="2 5"/><circle r="96"/><circle r="83"/>
+  <g id="ray"><path d="M0 -284 L8 -264 L0 -269 L-8 -264 Z"/><path d="M0 -246 L5 -233 L0 -237 L-5 -233 Z"/></g>
+  <use href="#ray"/>
+  <g id="bird" stroke-linejoin="round" stroke-linecap="round"><path d="M-11 0 Q-4 -7 1 -1 L15 -5 L8 1 L17 5 L2 4 Q-3 10 -9 4 L-17 8 L-13 1 L-19 -3 Z"/><path d="M-3 -2 L-8 -11 M1 -1 L6 -12 M4 1 L13 -8"/></g>
+  <g id="bird-ring"><use href="#bird" transform="translate(0 -188)"/><use href="#bird" transform="translate(0 -188) rotate(30)"/><use href="#bird" transform="translate(0 -188) rotate(60)"/><use href="#bird" transform="translate(0 -188) rotate(90)"/><use href="#bird" transform="translate(0 -188) rotate(120)"/><use href="#bird" transform="translate(0 -188) rotate(150)"/><use href="#bird" transform="translate(0 -188) rotate(180)"/><use href="#bird" transform="translate(0 -188) rotate(210)"/><use href="#bird" transform="translate(0 -188) rotate(240)"/><use href="#bird" transform="translate(0 -188) rotate(270)"/><use href="#bird" transform="translate(0 -188) rotate(300)"/><use href="#bird" transform="translate(0 -188) rotate(330)"/></g>
+  <use href="#bird-ring"/>
+  <g id="triangle"><path d="M0 -78 L12 -20 L0 -29 L-12 -20 Z"/><path d="M0 -66 L4 -42 L0 -46 L-4 -42 Z"/></g>
+  <use href="#triangle"/><use href="#triangle" transform="rotate(30)"/><use href="#triangle" transform="rotate(60)"/><use href="#triangle" transform="rotate(90)"/><use href="#triangle" transform="rotate(120)"/><use href="#triangle" transform="rotate(150)"/><use href="#triangle" transform="rotate(180)"/><use href="#triangle" transform="rotate(210)"/><use href="#triangle" transform="rotate(240)"/><use href="#triangle" transform="rotate(270)"/><use href="#triangle" transform="rotate(300)"/><use href="#triangle" transform="rotate(330)"/>
+  <path d="M0 -52 L8 -15 L0 -20 L-8 -15 Z"/><path d="M0 52 L8 15 L0 20 L-8 15 Z"/><path d="M-52 0 L-15 8 L-20 0 L-15 -8 Z"/><path d="M52 0 L15 8 L20 0 L15 -8 Z"/>
+ </g>
+ <g id="cloud" stroke-linejoin="round" stroke-linecap="round"><path d="M18 82 C8 68 20 54 35 66 C41 48 65 51 68 68 C86 62 99 75 88 87 C74 96 60 85 52 84 C41 97 25 94 18 82Z"/><path d="M33 77 Q48 65 60 79 Q72 68 82 80 M38 86 Q54 80 68 87"/></g><g stroke-linejoin="round" stroke-linecap="round" opacity=".65"><path d="M18 82 C8 68 20 54 35 66 C41 48 65 51 68 68 C86 62 99 75 88 87 C74 96 60 85 52 84 C41 97 25 94 18 82Z"/><path d="M33 77 Q48 65 60 79 Q72 68 82 80 M38 86 Q54 80 68 87"/></g>
+ <use href="#cloud" x="32" y="68"/><use href="#cloud" x="610" y="68" transform="translate(1260 0) scale(-1 1)"/>
+ <g transform="translate(360 824)"><path d="M0 0 C-10 -15 -10 -27 0 -42 C10 -27 10 -15 0 0Z"/><path d="M0 0 C-24 -8 -33 -23 -28 -36 C-13 -31 -5 -15 0 0Z"/><path d="M0 0 C24 -8 33 -23 28 -36 C13 -31 5 -15 0 0Z"/><path d="M-40 8 Q-18 0 0 8 Q18 0 40 8"/></g>
+</g></svg>
